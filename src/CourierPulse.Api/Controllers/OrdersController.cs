@@ -117,6 +117,36 @@ public class OrdersController : ControllerBase
         return Ok(new PagedResult<OrderResponse>(items, page, pageSize, totalCount));
     }
 
+    [HttpGet("mine")]
+    [Authorize(Roles = "Courier")]
+    [ProducesResponseType(typeof(PagedResult<OrderResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<OrderResponse>>> GetMine([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        var courierId = GetCourierId();
+
+        var query = _db.DeliveryOrders.AsNoTracking().Where(o => o.CourierId == courierId);
+        var totalCount = await query.CountAsync();
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
+
+        var items = await query
+            .OrderByDescending(o => o.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(o => new OrderResponse(
+                o.Id, o.TrackingCode, o.PickupAddress, o.DropoffAddress, o.Zone, o.PackageWeightKg,
+                o.PromisedWindowStart, o.PromisedWindowEnd, o.Status, o.CourierId,
+                o.Courier == null ? null : o.Courier.FullName,
+                o.Status != DeliveryOrderStatus.Cancelled &&
+                    ((o.Status == DeliveryOrderStatus.Delivered && o.DeliveredAt != null && o.DeliveredAt > o.PromisedWindowEnd) ||
+                     (o.Status != DeliveryOrderStatus.Delivered && now > o.PromisedWindowEnd)),
+                o.Notes, o.CreatedAt, o.AssignedAt, o.PickedUpAt, o.DeliveredAt))
+            .ToListAsync();
+
+        return Ok(new PagedResult<OrderResponse>(items, page, pageSize, totalCount));
+    }
+
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

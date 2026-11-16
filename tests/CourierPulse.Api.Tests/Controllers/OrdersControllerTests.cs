@@ -84,6 +84,32 @@ public class OrdersControllerTests : IClassFixture<CourierPulseWebApplicationFac
     }
 
     [Fact]
+    public async Task GetMine_AsCourier_ReturnsOnlyOrdersAssignedToThatCourier()
+    {
+        using var dispatcher = await _factory.CreateClient().AsDispatcherAsync();
+        var order = await CreateOrderAsync(dispatcher, "Downtown");
+        await dispatcher.PostAsync($"/api/orders/{order.Id}/assign", content: null);
+
+        using var courier = await _factory.CreateClient().AsDowntownCourierAsync();
+        var response = await courier.GetAsync("/api/orders/mine");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<PagedResult<OrderResponse>>();
+        Assert.Contains(page!.Items, o => o.Id == order.Id);
+        Assert.All(page.Items, o => Assert.NotNull(o.CourierId));
+    }
+
+    [Fact]
+    public async Task GetMine_AsDispatcher_ReturnsForbidden()
+    {
+        using var dispatcher = await _factory.CreateClient().AsDispatcherAsync();
+
+        var response = await dispatcher.GetAsync("/api/orders/mine");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task GetById_AsNonOwningCourier_ReturnsForbidden()
     {
         using var dispatcher = await _factory.CreateClient().AsDispatcherAsync();
