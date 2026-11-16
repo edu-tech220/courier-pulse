@@ -1,0 +1,62 @@
+@page
+@model CourierPulse.Web.Pages.TrackModel
+@{
+    ViewData["Title"] = "Track a parcel";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="h3 mb-3">Track a parcel</h1>
+
+        <form method="get" asp-page-handler="Search" class="d-flex gap-2 mb-4">
+            <input type="text" name="trackingCode" class="form-control" placeholder="e.g. CP-7K3F9Q" value="@Model.TrackingCode" required />
+            <button type="submit" class="btn btn-primary">Track</button>
+        </form>
+
+        @if (Model.ErrorMessage is not null)
+        {
+            <div class="alert alert-warning">@Model.ErrorMessage</div>
+        }
+
+        @if (Model.Tracking is { } tracking)
+        {
+            <dl class="row">
+                <dt class="col-sm-4">Tracking code</dt>
+                <dd class="col-sm-8">@tracking.TrackingCode</dd>
+
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">
+                    @tracking.Status
+                    @if (tracking.IsOverdue)
+                    {
+                        <span class="badge bg-danger">Overdue</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-4">Zone</dt>
+                <dd class="col-sm-8">@tracking.Zone</dd>
+
+                <dt class="col-sm-4">Promised window</dt>
+                <dd class="col-sm-8">@tracking.PromisedWindowStart.ToLocalTime().ToString("g") - @tracking.PromisedWindowEnd.ToLocalTime().ToString("g")</dd>
+            </dl>
+
+            <h2 class="h5">Timeline</h2>
+            @if (tracking.Timeline.Count == 0)
+            {
+                <p class="text-muted">No status changes yet.</p>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var e in tracking.Timeline)
+                    {
+                        <li class="list-group-item">
+                            @e.FromStatus &rarr; @e.ToStatus
+                            <span class="text-muted">(@e.ChangedAt.ToLocalTime().ToString("g"))</span>
+                        </li>
+                    }
+                </ul>
+            }
+        }
+    </div>
+</div>
