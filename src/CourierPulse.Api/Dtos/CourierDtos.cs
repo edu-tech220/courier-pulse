@@ -4,10 +4,10 @@ using CourierPulse.Api.Models;
 namespace CourierPulse.Api.Dtos;
 
 public record CreateCourierRequest(
-    [property: Required, StringLength(200, MinimumLength = 2)] string FullName,
-    [property: Required, EmailAddress] string Email,
-    [property: Required, StringLength(100, MinimumLength = 8)] string Password,
-    [property: Required] CourierRole Role,
+    [Required, StringLength(200, MinimumLength = 2)] string FullName,
+    [Required, EmailAddress] string Email,
+    [Required, StringLength(100, MinimumLength = 8)] string Password,
+    [Required] CourierRole Role,
     string? Zone);
 
 public record CourierResponse(
@@ -18,4 +18,4 @@ public record CourierResponse(
     string Zone,
     CourierAvailability Availability);
 
-public record UpdateAvailabilityRequest([property: Required] CourierAvailability Availability);
+public record UpdateAvailabilityRequest([Required] CourierAvailability Availability);
