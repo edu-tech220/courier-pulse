@@ -1,0 +1,75 @@
+@page
+@model CourierPulse.Web.Pages.Couriers.IndexModel
+@using CourierPulse.Web.ApiClient
+@{
+    ViewData["Title"] = "Couriers";
+}
+
+<h1 class="h3 mb-3">Couriers</h1>
+
+@if (Model.StatusMessage is not null)
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="row">
+    <div class="col-lg-7">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Zone</th>
+                    <th>Availability</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var courier in Model.Couriers)
+                {
+                    <tr>
+                        <td>@courier.FullName</td>
+                        <td>@courier.Email</td>
+                        <td>@courier.Role</td>
+                        <td>@courier.Zone</td>
+                        <td>@courier.Availability</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-5">
+        <h2 class="h5">Create account</h2>
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.FullName" class="form-label">Full name</label>
+                <input asp-for="Input.FullName" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label">Email</label>
+                <input asp-for="Input.Email" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label">Password</label>
+                <input asp-for="Input.Password" type="password" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Role" class="form-label">Role</label>
+                <select asp-for="Input.Role" class="form-select" asp-items="Html.GetEnumSelectList<CourierRole>()"></select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Zone" class="form-label">Zone (couriers only)</label>
+                <input asp-for="Input.Zone" class="form-control" placeholder="e.g. Downtown" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>

@@ -1,10 +1,17 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "CourierPulse";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="px-4 py-5 text-center">
+    <h1 class="display-5 fw-bold">CourierPulse</h1>
+    <p class="lead col-lg-8 mx-auto">
+        Courier dispatch and delivery tracking: zone-based auto-assignment, a state machine
+        for every order, and an idempotent delivery confirmation flow.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a class="btn btn-primary btn-lg" asp-page="/Track">Track a parcel</a>
+        <a class="btn btn-outline-secondary btn-lg" asp-page="/Account/Login">Sign in</a>
+    </div>
 </div>
