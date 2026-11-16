@@ -1,0 +1,92 @@
+@page
+@model CourierPulse.Web.Pages.DashboardModel
+@using CourierPulse.Web.ApiClient
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1 class="h3 mb-3">Dispatch dashboard</h1>
+
+@if (Model.StatusMessage is not null)
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-auto">
+        <label class="form-label">Status</label>
+        <select name="Status" class="form-select" asp-items="Html.GetEnumSelectList<DeliveryOrderStatus>()">
+            <option value="">(any)</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Zone</label>
+        <input type="text" name="Zone" class="form-control" value="@Model.Zone" placeholder="e.g. Downtown" />
+    </div>
+    <div class="col-auto form-check mb-2">
+        <input type="checkbox" name="OverdueOnly" value="true" class="form-check-input" checked="@Model.OverdueOnly" />
+        <label class="form-check-label">Overdue only</label>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-page="/Orders/Create" class="btn btn-outline-primary">New order</a>
+    </div>
+</form>
+
+@if (Model.Orders is not null)
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Tracking code</th>
+                <th>Zone</th>
+                <th>Status</th>
+                <th>Courier</th>
+                <th>Promised by</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders.Items)
+            {
+                <tr>
+                    <td><a asp-page="/Orders/Details" asp-route-id="@order.Id">@order.TrackingCode</a></td>
+                    <td>@order.Zone</td>
+                    <td>
+                        @order.Status
+                        @if (order.IsOverdue)
+                        {
+                            <span class="badge bg-danger">Overdue</span>
+                        }
+                    </td>
+                    <td>@(order.CourierName ?? "-")</td>
+                    <td>@order.PromisedWindowEnd.ToLocalTime().ToString("g")</td>
+                    <td>
+                        @if (order.Status == DeliveryOrderStatus.Pending)
+                        {
+                            <form method="post" asp-page-handler="Assign" asp-route-id="@order.Id">
+                                <button type="submit" class="btn btn-sm btn-success">Assign</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(Model.PageNumber <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-page="/Dashboard" asp-route-status="@Model.Status" asp-route-zone="@Model.Zone" asp-route-overdueOnly="@Model.OverdueOnly" asp-route-page="@(Model.PageNumber - 1)">Previous</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">Page @Model.PageNumber of @Math.Max(1, (int)Math.Ceiling(Model.Orders.TotalCount / (double)Model.Orders.PageSize))</span></li>
+            <li class="page-item @((Model.PageNumber * Model.Orders.PageSize) >= Model.Orders.TotalCount ? "disabled" : "")">
+                <a class="page-link" asp-page="/Dashboard" asp-route-status="@Model.Status" asp-route-zone="@Model.Zone" asp-route-overdueOnly="@Model.OverdueOnly" asp-route-page="@(Model.PageNumber + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
