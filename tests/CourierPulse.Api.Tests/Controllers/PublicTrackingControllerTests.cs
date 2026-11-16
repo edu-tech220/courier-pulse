@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using CourierPulse.Api.Dtos;
 using CourierPulse.Api.Models;
 using CourierPulse.Api.Tests.Infrastructure;
