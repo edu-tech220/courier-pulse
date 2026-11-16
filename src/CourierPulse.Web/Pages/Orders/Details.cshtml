@@ -1,0 +1,110 @@
+@page "{id:int}"
+@model CourierPulse.Web.Pages.Orders.DetailsModel
+@using CourierPulse.Web.ApiClient
+@{
+    ViewData["Title"] = "Order details";
+}
+
+@if (Model.StatusMessage is not null)
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@if (Model.Order is { } order)
+{
+    <h1 class="h3 mb-3">
+        Order @order.TrackingCode
+        @if (order.IsOverdue)
+        {
+            <span class="badge bg-danger">Overdue</span>
+        }
+    </h1>
+
+    <dl class="row">
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@order.Status</dd>
+
+        <dt class="col-sm-3">Zone</dt>
+        <dd class="col-sm-9">@order.Zone</dd>
+
+        <dt class="col-sm-3">Pickup</dt>
+        <dd class="col-sm-9">@order.PickupAddress</dd>
+
+        <dt class="col-sm-3">Dropoff</dt>
+        <dd class="col-sm-9">@order.DropoffAddress</dd>
+
+        <dt class="col-sm-3">Package weight</dt>
+        <dd class="col-sm-9">@order.PackageWeightKg kg</dd>
+
+        <dt class="col-sm-3">Promised window</dt>
+        <dd class="col-sm-9">@order.PromisedWindowStart.ToLocalTime().ToString("g") - @order.PromisedWindowEnd.ToLocalTime().ToString("g")</dd>
+
+        <dt class="col-sm-3">Courier</dt>
+        <dd class="col-sm-9">@(order.CourierName ?? "Unassigned")</dd>
+
+        @if (!string.IsNullOrWhiteSpace(order.Notes))
+        {
+            <dt class="col-sm-3">Notes</dt>
+            <dd class="col-sm-9">@order.Notes</dd>
+        }
+    </dl>
+
+    <div class="d-flex gap-2 mb-4">
+        @if (order.Status == DeliveryOrderStatus.Pending && (User.IsInRole("Admin") || User.IsInRole("Dispatcher")))
+        {
+            <form method="post" asp-page-handler="Assign" asp-route-id="@order.Id">
+                <button type="submit" class="btn btn-success">Assign to least-loaded courier</button>
+            </form>
+        }
+
+        @if (User.IsInRole("Courier"))
+        {
+            @if (order.Status == DeliveryOrderStatus.Assigned)
+            {
+                <form method="post" asp-page-handler="Transition" asp-route-id="@order.Id">
+                    <input type="hidden" name="toStatus" value="PickedUp" />
+                    <button type="submit" class="btn btn-primary">Mark picked up</button>
+                </form>
+            }
+            @if (order.Status == DeliveryOrderStatus.PickedUp)
+            {
+                <form method="post" asp-page-handler="Transition" asp-route-id="@order.Id">
+                    <input type="hidden" name="toStatus" value="InTransit" />
+                    <button type="submit" class="btn btn-primary">Mark in transit</button>
+                </form>
+            }
+            @if (order.Status == DeliveryOrderStatus.InTransit)
+            {
+                <form method="post" asp-page-handler="Deliver" asp-route-id="@order.Id">
+                    <button type="submit" class="btn btn-success">Confirm delivery</button>
+                </form>
+                <form method="post" asp-page-handler="Transition" asp-route-id="@order.Id">
+                    <input type="hidden" name="toStatus" value="Failed" />
+                    <button type="submit" class="btn btn-outline-danger">Mark failed</button>
+                </form>
+            }
+        }
+    </div>
+
+    <h2 class="h5">Timeline</h2>
+    @if (Model.Timeline.Count == 0)
+    {
+        <p class="text-muted">No status changes yet.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var e in Model.Timeline)
+            {
+                <li class="list-group-item">
+                    @e.FromStatus &rarr; @e.ToStatus
+                    <span class="text-muted">(@e.ChangedAt.ToLocalTime().ToString("g"))</span>
+                </li>
+            }
+        </ul>
+    }
+}

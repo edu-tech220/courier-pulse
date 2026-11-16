@@ -1,0 +1,59 @@
+@page
+@model CourierPulse.Web.Pages.Orders.CreateModel
+@{
+    ViewData["Title"] = "New order";
+}
+
+<h1 class="h3 mb-3">New delivery order</h1>
+
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<form method="post" class="col-lg-6">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Input.PickupAddress" class="form-label">Pickup address</label>
+        <input asp-for="Input.PickupAddress" class="form-control" />
+        <span asp-validation-for="Input.PickupAddress" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DropoffAddress" class="form-label">Dropoff address</label>
+        <input asp-for="Input.DropoffAddress" class="form-control" />
+        <span asp-validation-for="Input.DropoffAddress" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.Zone" class="form-label">Zone</label>
+        <input asp-for="Input.Zone" class="form-control" placeholder="e.g. Downtown" />
+        <span asp-validation-for="Input.Zone" class="text-danger"></span>
+        <div class="form-text">Must match a courier's zone for auto-assignment to find a candidate.</div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.PackageWeightKg" class="form-label">Package weight (kg)</label>
+        <input asp-for="Input.PackageWeightKg" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="Input.PackageWeightKg" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col mb-3">
+            <label asp-for="Input.PromisedWindowStart" class="form-label">Promised window start</label>
+            <input asp-for="Input.PromisedWindowStart" type="datetime-local" class="form-control" />
+        </div>
+        <div class="col mb-3">
+            <label asp-for="Input.PromisedWindowEnd" class="form-label">Promised window end</label>
+            <input asp-for="Input.PromisedWindowEnd" type="datetime-local" class="form-control" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.Notes" class="form-label">Notes (optional)</label>
+        <textarea asp-for="Input.Notes" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create order</button>
+</form>
