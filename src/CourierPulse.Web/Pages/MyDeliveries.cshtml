@@ -1,0 +1,69 @@
+@page
+@model CourierPulse.Web.Pages.MyDeliveriesModel
+@using CourierPulse.Web.ApiClient
+@{
+    ViewData["Title"] = "My deliveries";
+}
+
+<h1 class="h3 mb-3">My deliveries</h1>
+
+@if (Model.StatusMessage is not null)
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="d-flex gap-2 mb-4">
+    <form method="post" asp-page-handler="Availability">
+        <input type="hidden" name="availability" value="Available" />
+        <button type="submit" class="btn btn-outline-success btn-sm">Set available</button>
+    </form>
+    <form method="post" asp-page-handler="Availability">
+        <input type="hidden" name="availability" value="Busy" />
+        <button type="submit" class="btn btn-outline-warning btn-sm">Set busy</button>
+    </form>
+    <form method="post" asp-page-handler="Availability">
+        <input type="hidden" name="availability" value="Offline" />
+        <button type="submit" class="btn btn-outline-secondary btn-sm">Set offline</button>
+    </form>
+</div>
+
+@if (Model.Orders is { Items.Count: > 0 })
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Tracking code</th>
+                <th>Zone</th>
+                <th>Status</th>
+                <th>Promised by</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders.Items)
+            {
+                <tr>
+                    <td>@order.TrackingCode</td>
+                    <td>@order.Zone</td>
+                    <td>
+                        @order.Status
+                        @if (order.IsOverdue)
+                        {
+                            <span class="badge bg-danger">Overdue</span>
+                        }
+                    </td>
+                    <td>@order.PromisedWindowEnd.ToLocalTime().ToString("g")</td>
+                    <td><a asp-page="/Orders/Details" asp-route-id="@order.Id" class="btn btn-sm btn-primary">Open</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (Model.ErrorMessage is null)
+{
+    <p class="text-muted">No deliveries assigned to you yet.</p>
+}
