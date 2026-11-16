@@ -4,12 +4,12 @@ using CourierPulse.Api.Models;
 namespace CourierPulse.Api.Dtos;
 
 public record CreateOrderRequest(
-    [property: Required, StringLength(300, MinimumLength = 3)] string PickupAddress,
-    [property: Required, StringLength(300, MinimumLength = 3)] string DropoffAddress,
-    [property: Required, StringLength(100, MinimumLength = 1)] string Zone,
-    [property: Range(0.01, 1000)] decimal PackageWeightKg,
-    [property: Required] DateTime PromisedWindowStart,
-    [property: Required] DateTime PromisedWindowEnd,
+    [Required, StringLength(300, MinimumLength = 3)] string PickupAddress,
+    [Required, StringLength(300, MinimumLength = 3)] string DropoffAddress,
+    [Required, StringLength(100, MinimumLength = 1)] string Zone,
+    [Range(0.01, 1000)] decimal PackageWeightKg,
+    [Required] DateTime PromisedWindowStart,
+    [Required] DateTime PromisedWindowEnd,
     string? Notes);
 
 public record OrderResponse(
@@ -31,7 +31,7 @@ public record OrderResponse(
     DateTime? PickedUpAt,
     DateTime? DeliveredAt);
 
-public record TransitionRequest([property: Required] DeliveryOrderStatus ToStatus);
+public record TransitionRequest([Required] DeliveryOrderStatus ToStatus);
 
 public record OrderStatusEventResponse(
     DeliveryOrderStatus FromStatus,
